@@ -1,0 +1,223 @@
+INSTALLvms.txt - Installation of Vim on OpenVMS
+Last change: 2002 Mar 09
+
+This file contains instructions for compiling Vim. If you already have an
+executable version of Vim, you don't need this.
+
+The file "feature.h" can be edited to match your preferences. You can skip
+this, then you will get the default behavior as is documented, which should
+be fine for most people.
+
+More information and case analysis you can found in os_vms.txt
+([runtime.doc]os_vms.txt or :help vms from vim prompt)
+
+Contents:
+1. Download files
+2. Configuration
+3. Compilation DECC
+4. Compilation VAXC
+5. CTAGS, XXD
+6. Deployment
+7. Notes
+8. Authors
+
+----------------------------------------------------------------------------
+1. Download files
+
+1.1. Visit the Vim ftp site (see ftp://ftp.vim.org/pub/vim/MIRRORS)
+     and obtain the following three files:
+
+     unix/vim-X.X-src.tar.gz
+     unix/vim-X.X-rt.tar.gz
+     extra/vim-X.X-extra.tar.gz
+
+     where X.X is the version number.
+
+1.2. Expand the three archives.
+
+1.3. Apply patches if they exist.  (Patch files are found in the ftp
+     site in the "patches" directory.)
+
+1.4. You will need either the DECSET mms utility or the freely available clone
+     of it called mmk (VMS has no make utility in the standard distribution).
+     You can download mmk from http://www.openvms.digital.com/freeware/MMK/
+
+1.5. If you want to have Perl, Python or Tcl support in Vim you will need VMS
+     distributions for them as well.
+
+NOTE: procedure in chapter 1 describes source code preparation from multi OS code,
+however it is available OpenVMS oprimized (and tested) source code from:
+ftp://ftp.polarhome.com/pub/vim/source/vms/
+
+2.   Configuration
+
+2.1. Edit vim-X.X/src/feature.h for your preference.  (You can skip
+     this, then you will get the default behavior as is documented,
+     which should be fine for most people.)
+
+     For example, if you want to add the MULTI_BYTE feature, turn on
+     #define MULTI_BYTE
+
+2.2  Edit vim-X.X/src/Make_vms.mms to customize your Vim. Options are:
+
+        Parameter name  : MODEL
+        Description     : Build model selection
+        Options:        : TINY    - Almost no features enabled, not even multiple windows
+                          SMALL   - Few features enabled, as basic as possible
+                          NORMAL  - A default selection of features enabled
+                          BIG     - Many features enabled, as rich as possible. (OpenVMS default)
+                          HUGE    - All possible featues enabled.
+                          Uncommented - will default to BIG
+        Default         : MODEL = BIG
+
+        Parameter name  : GUI
+        Description     : GUI or terminal mode executable
+        Options:        : YES - GUI executable
+                          Uncommented - char only
+        Default         : GUI = YES
+
+        Parameter name  : DECC
+        Description     : Compiler selection
+        Options:        : YES - DECC compiler
+                          Uncommented - VAXC compiler
+        Default         : DECC = YES
+
+        Parameter name  : CCVER
+        Description     : Compiler version with :ver command
+        Options:        : YES - Compiler version info will be added
+                          Uncommented - will not be added
+        Default         : CCVER = YES
+
+        Parameter name  : DEBUG
+        Description     : Building a debug version
+        Options:        : YES - debug version will be built
+                          Uncommented - building normal executable
+        Default         : Uncommented
+
+        Parameter name  : VIM_TCL
+        Description     : Add Tcl support
+        Options:        : YES - Build with support
+                          Uncommented - build without support.
+        Default         : Uncommented
+
+        Parameter name  : VIM_PERL
+        Description     : Add Perl support
+        Options:        : YES - Build with support
+                          Uncommented - build without support.
+        Default         : Uncommented
+
+        Parameter name  : VIM_PYTHON
+        Description     : Add Python support
+        Options:        : YES - Build with support
+                          Uncommented - build without support.
+        Default         : Uncommented
+
+
+        Parameter name  : VIM_XIM
+        Description     : X Input Method.  For entering special languages like chinese and
+                          Japanese. Please define just one: VIM_XIM or VIM_HANGULIN
+        Options:        : YES - Build with support
+                          Uncommented - build without support.
+        Default         : Uncommented
+
+        Parameter name  : VIM_HANGULIN
+        Description     : Internal Hangul input method. GUI only.
+                          Please define just one: VIM_XIM or VIM_HANGULIN
+        Options:        : YES - Build with support
+                          Uncommented - build without support.
+        Default         : Uncommented
+
+        Parameter name  : VIM_TAG_ANYWHITE
+        Description     : Allow any white space to separate the fields in a tags file
+                          When not defined, only a TAB is allowed.
+        Options:        : YES - Build with support
+                          Uncommented - build without support.
+        Default         : Uncommented
+
+     You can edit the *_INC and *_LIB qualifiers, but it is really
+     not recommended for beginners.
+
+3. Compilation DECC
+
+3.1. If you have MSS on your system, the command
+
+        mms /descrip=Make_vms.mms
+
+     will start building your own customized version of Vim.
+     The adequate command for mmk is:
+
+        mmk /descrip=Make_vms.mms
+
+     NOTE: Because of empty /auto/config.h (needed for Unix configure) build
+     will fail with very strange messages. Therefore before building, it is
+     recommended to make one clean up, to prepare everything for OpenVMS
+     development. The command is:
+
+        mms /descrip=Make_vms.mms clean
+
+4. Compilation VAXC
+
+4.1. VAXC compiler is not fully ANSI C compatible in pre-processor directives
+     semantics, therefore you have to use a converter program what will do the
+     lion part of the job.
+
+        @os_vms_fix.com *.c *.h <.proto>*.pro
+
+     more information can be found in os_vms_fix.com file itself.
+
+     NOTE: even if os_vms_fix.com will fix all pre-processor directives it will
+     leave singe (long) line directives. You have to fix them manually.
+     Known problematic files are option.h and option.c
+
+4.2. After the conversion you can continue building as it has been described
+     above.
+
+5. CTAGS, XXD
+
+5.1. MMS_VIM.EXE is building together with VIM.EXE, but for CTAGS.EXE and
+     XXD.EXE you should change to subdirectory <.CTAGS> or <.XXD> and build
+     them separately.
+
+5.2. In these directories you can found one make file for VMS as well.
+     Please read the detailed build instructions in the related *.MMS file.
+
+6.   Deployment
+
+6.1. Copy over all executables to the deployment directory.
+
+6.2. Vim uses a special directory structure to hold the document and runtime
+     files:
+
+   vim (or wherever)
+    |-- doc
+    |-- syntax
+    vimrc    (system rc files)
+    gvimrc
+
+6.3 Define logicals VIM
+
+        define/nolog device:[leading-path-here.vim]       vim
+
+     to get vim.exe to find its document, filetype, and syntax files.
+
+     Now, if you are lucky you should have one own built, customized and
+     working Vim.
+
+7.   Notes
+
+7.1. New Compaq C compiler
+
+     If you are using Compaq C compiler V6.2 or newer, Informational messages
+     of the type QUESTCOMPARE will be displayed. You should ignore those
+     messages ; they are generated only because some test comparisons are done
+     with variables which type vary depending on the OS. Under VMS, those are
+     "unsigned" and the compiler issue a message whenever the comparison is
+     done with '<=' to 0. However, the code is correct and will behave as
+     expected.
+     ( Jerome Lauret <JLAURET@mail.chem.sunysb.edu> Vim 6.0n )
+	NOTE: from version 6.0ad Vim code has been reviewed and these warnings
+	have been corrected.
+
+8.   Authors
+
+     Initial version, 2000 Jul 19, Zoltan Arpadffy <arpadffy@altavista.net>
