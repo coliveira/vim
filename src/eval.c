@@ -7731,6 +7731,7 @@ ex_function(eap)
 	/* redefine existing function */
 	ga_clear_strings(&(fp->args));
 	ga_clear_strings(&(fp->lines));
+	vim_free(name);
     }
     else
     {
