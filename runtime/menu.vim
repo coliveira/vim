@@ -203,7 +203,7 @@ endfun
 
 fun! s:ToggleGuiOption(option)
     " If a:option is already set in guioptions, then we want to remove it
-    if match(&guioptions, a:option) > -1
+    if match(&guioptions, "\\C" . a:option) > -1
 	exec "set go-=" . a:option
     else
 	exec "set go+=" . a:option
