@@ -607,6 +607,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    147,
+/**/
     146,
 /**/
     145,
@@ -1014,6 +1016,12 @@ list_version()
 	}
     }
 
+#ifdef MODIFIED_BY
+    MSG_PUTS("\n");
+    MSG_PUTS(_("Modified by "));
+    MSG_PUTS(MODIFIED_BY);
+#endif
+
 #ifdef HAVE_PATHDEF
     if (*compiled_user != NUL || *compiled_sys != NUL)
     {
@@ -1228,6 +1236,9 @@ intro_message(colon)
 	"",
 	N_("version "),
 	N_("by Bram Moolenaar et al."),
+#ifdef MODIFIED_BY
+	" ",
+#endif
 	N_("Vim is open source and freely distributable"),
 	"",
 	N_("Help poor children in Uganda!"),
@@ -1249,6 +1260,9 @@ intro_message(colon)
 	NULL,
 	NULL,
 	NULL,
+#ifdef MODIFIED_BY
+	NULL,
+#endif
 	NULL,
 	NULL,
 	NULL,
@@ -1332,7 +1346,21 @@ do_intro_line(row, mesg, add_version, attr)
     int		col;
     char_u	*p;
     int		l;
-    char_u	buf[100];
+# define MODBY_LEN 150
+    char_u	buf[MODBY_LEN];
+#ifdef MODIFIED_BY
+    char_u	modby[MODBY_LEN];
+
+    if (*mesg == ' ')
+    {
+	STRNCPY(modby, _("Modified by "), MODBY_LEN);
+	modby[MODBY_LEN - 1] = NUL;
+	l = STRLEN(modby);
+	STRNCPY(modby + l, MODIFIED_BY, MODBY_LEN - l);
+	modby[MODBY_LEN - 1] = NUL;
+	mesg = modby;
+    }
+#endif
 
     /* Center the message horizontally. */
     col = vim_strsize(mesg);
